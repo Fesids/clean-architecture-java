@@ -1,0 +1,58 @@
+server:
+  port : 8080
+
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedHeaders: "*"
+            allowedMethods:
+              - GET
+              - POST
+
+      routes:
+
+        ## AUTH service
+        - id: auth
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/users/testeTK
+          filters:
+            - AuthenticationFilter
+
+        - id: auth
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/users/**
+          filters:
+            - RewritePath=/api/v1/users/register/(?<role>.*), /api/v1/users/register/${role}
+            #- AuthenticationFilter
+
+        - id: auth
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/profiles/create
+          filters:
+            - AuthenticationFilter
+
+        - id: auth
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/profiles/**
+          filters:
+            - RewritePath=/api/v1/profiles/(?<id>.*), /api/v1/profiles/${id}
+            - AuthenticationFilter
+
+
+application:
+  name: GATEWAY
+
+eureka:
+  client:
+    service-url:
+      defaultZone : http://localhost:8761/eureka/
+
